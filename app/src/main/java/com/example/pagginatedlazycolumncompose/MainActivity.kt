@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterialApi::class)
+
 package com.example.pagginatedlazycolumncompose
 
 import android.content.Context
@@ -17,16 +19,21 @@ import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.MaterialTheme.typography
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
@@ -38,7 +45,9 @@ import androidx.paging.compose.items
 import com.example.pagginatedlazycolumncompose.databinding.MainlayoutBinding
 import com.example.pagginatedlazycolumncompose.ui.theme.PagginatedLazyColumnComposeTheme
 import com.google.accompanist.coil.rememberCoilPainter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var viewBinding: MainlayoutBinding
@@ -278,6 +287,124 @@ fun Greeting(name: String) {
 @Composable
 fun DefaultPreview() {
     PagginatedLazyColumnComposeTheme {
-        Greeting("Android")
+        val scaffoldState = rememberScaffoldState()
+        val coroutineScope = rememberCoroutineScope()
+        val drawerState = rememberDrawerState(DrawerValue.Closed)
+        val modalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+        Scaffold(scaffoldState = scaffoldState, modifier = Modifier.fillMaxSize(),
+            topBar = {
+                TopAppBar(title = { Text("test") }, navigationIcon = {
+                    IconButton(onClick = {
+                        if (scaffoldState.drawerState.isOpen) {
+                            coroutineScope.launch { scaffoldState.drawerState.close() }
+                        } else {
+                            coroutineScope.launch { scaffoldState.drawerState.open() }
+                        }
+                    }) {
+                        Icon(Icons.Filled.Menu, "")
+                    }
+                }, actions = {
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Filled.Send, "")
+                    }
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Filled.Edit, "")
+                    }
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Filled.Delete, "")
+                    }
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Filled.MoreVert, "")
+                    }
+                })
+            },
+            bottomBar = {
+                Box(
+                    Modifier.fillMaxWidth().height(50.dp)
+                        .background(MaterialTheme.colors.primarySurface)
+                ) {
+                    Text(
+                        "Yasir Tanveer",
+                        modifier = Modifier.fillMaxSize().wrapContentSize(),
+                        textAlign = TextAlign.Center,
+                        color = Color.White,
+                        fontSize = 20.sp
+                    )
+                }
+            }, floatingActionButton = {
+                FloatingActionButton(
+                    { /*fabClick(coroutineScope, scaffoldState)*/
+                        coroutineScope.launch { if (modalBottomSheetState.isVisible) modalBottomSheetState.hide() else modalBottomSheetState.show() }
+                    },
+                    content = {
+                        Icon(Icons.Filled.Call, "")
+                    })
+            },
+            drawerContent = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        "test1",
+                        modifier = Modifier.fillMaxWidth()
+                            .wrapContentSize(Alignment.Center)
+                            .background(Color.Green)
+                            .weight(1f),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        "test2",
+                        modifier = Modifier.wrapContentHeight(Alignment.CenterVertically)
+                            .background(Color.Black)
+                            .weight(3f)
+                    )
+                }
+            }
+
+        ) {
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                ModalDrawer(drawerContent = {
+                    Column {
+                        Text("Right 1")
+                        Text("Right 2")
+                    }
+                }, drawerState = drawerState) {
+                    Column {
+                        Text("Right 3")
+                        Text("Right 4")
+                    }
+                }
+            }
+            ModalBottomSheetLayout(
+                sheetContent = {
+                    Column {
+                        Text("Bottom Sheet 1")
+                        Text("Bottom Sheet 2")
+                        Text("Bottom Sheet 3")
+                        Text("Bottom Sheet 4")
+                        Text("Bottom Sheet 3")
+                        Text("Bottom Sheet 4")
+                        Text("Bottom Sheet 3")
+                        Text("Bottom Sheet 4")
+                        Text("Bottom Sheet 3")
+                        Text("Bottom Sheet 4")
+                        Text("Bottom Sheet 4")
+                        Text("Bottom Sheet 6")
+                    }
+                },
+                modifier = Modifier.padding(bottom = 50.dp),
+                sheetState = modalBottomSheetState,
+                sheetBackgroundColor = Color.Red
+            ) {
+            }
+            Column {
+                Greeting("Android1")
+                Greeting("Android")
+            }
+        }
     }
+}
+
+private fun fabClick(
+    coroutineScope: CoroutineScope, scaffoldState: ScaffoldState
+) {
+    coroutineScope.launch { scaffoldState.drawerState.open() }
 }
